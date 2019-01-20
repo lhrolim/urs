@@ -1,6 +1,7 @@
 package br.com.plgbr.urlshortener.model.entities;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -12,7 +13,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "urls")
-public class Url implements Serializable {
+public class UrlModel implements Serializable {
 
 	private static final long serialVersionUID = -7847438739250612432L;
 
@@ -20,13 +21,13 @@ public class Url implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
-	@Column(nullable = false)
+	@Column(nullable = false, name = "shorturl")
 	private String shortUrl;
 
-	@Column(nullable = false)
+	@Column(nullable = false, name = "longurl")
 	private String longUrl;
 
-	@Column(nullable = false)
+	@Column(nullable = false, name = "creationdate")
 	private Date creationDate;
 
 	public int getId() {
@@ -45,12 +46,28 @@ public class Url implements Serializable {
 		this.longUrl = longUrl;
 	}
 
+	public String getShortUrl() {
+		return shortUrl;
+	}
+
+	public void setShortUrl(String shortUrl) {
+		this.shortUrl = shortUrl;
+	}
+
 	public Date getCreationDate() {
 		return creationDate;
 	}
 
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
+	}
+
+	public static UrlModel getInstance(String shortUrl, String longUrl) {
+		UrlModel urlModel = new UrlModel();
+		urlModel.setCreationDate(Calendar.getInstance().getTime());
+		urlModel.setLongUrl(longUrl);
+		urlModel.setShortUrl(shortUrl);
+		return urlModel;
 	}
 
 	@Override
@@ -69,7 +86,7 @@ public class Url implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Url other = (Url) obj;
+		UrlModel other = (UrlModel) obj;
 		if (shortUrl == null) {
 			if (other.shortUrl != null)
 				return false;
@@ -80,7 +97,7 @@ public class Url implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Url [shortUrl=" + shortUrl + ", longUrl=" + longUrl + ", creationDate=" + creationDate + "]";
+		return "UrlModel [shortUrl=" + shortUrl + ", longUrl=" + longUrl + ", creationDate=" + creationDate + "]";
 	}
 
 }

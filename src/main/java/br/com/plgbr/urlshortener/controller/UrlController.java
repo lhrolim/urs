@@ -1,19 +1,28 @@
 package br.com.plgbr.urlshortener.controller;
 
+import java.net.URI;
+
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.view.RedirectView;
 
+import br.com.plgbr.urlshortener.controller.dto.ShortUrlCreationDto;
+import br.com.plgbr.urlshortener.exception.LongUrlNotFoundException;
 import br.com.plgbr.urlshortener.services.UrlService;
+import br.com.plgbr.urlshortener.util.validation.ValidationErrorBuilder;
 
 @Controller
 public class UrlController {
@@ -26,21 +35,34 @@ public class UrlController {
 	@Autowired
 	private UrlService urlService;
 
-	@RequestMapping(value = "/api/v1/url/${longurl}", produces = TEXT, method = RequestMethod.POST)
+	@RequestMapping(value = "/api/v1/url", produces = JSON, method = RequestMethod.POST, consumes = JSON)
 	@ResponseBody
-	public ResponseEntity<String> createShortUrl(@PathVariable("longURL") String longUrl) {
-		LOGGER.info("creating shorturl for {} ", longUrl);
-		return ResponseEntity.status(HttpStatus.OK).body(null);
+	public ResponseEntity<Object> createShortUrl(@RequestBody @Valid ShortUrlCreationDto shortUrlCreationDTO,
+			Errors errors) {
+		if (errors.hasErrors()) {
+			return ResponseEntity.badRequest().body(ValidationErrorBuilder.fromBindingErrors(errors));
+		}
+
+		String longUrl = shortUrlCreationDTO.getLongUrl();
+		LOGGER.info("creating short url for {} ", longUrl);
+		String shortUrl = urlService.buildShortUrl(longUrl);
+		LOGGER.info("shorturl created {} ", shortUrl);
+		return ResponseEntity.status(HttpStatus.OK).body(shortUrl);
 	}
 
-	@RequestMapping(value = "${shorturl}", method = RequestMethod.GET)
+	@RequestMapping(value = "/{shorturl}", method = RequestMethod.GET)
 	@ResponseBody
-	public RedirectView redirect(@PathVariable("shorturl") String shortUrl) {
+	public ResponseEntity<Object> redirect(@PathVariable("shorturl") String shortUrl) {
 		LOGGER.info("redirecting user to desired url for {} ", shortUrl);
-		RedirectView redirectView = new RedirectView();
-		String longUrl = urlService.lookupLongURL(shortUrl);
-		redirectView.setUrl("http://www.yahoo.com");
-		return redirectView;
+		try {
+			URI longUrl = urlService.lookupLongURL(shortUrl);
+			HttpHeaders httpHeaders = new HttpHeaders();
+			httpHeaders.setLocation(longUrl);
+			return new ResponseEntity<>(httpHeaders, HttpStatus.SEE_OTHER);
+		} catch (LongUrlNotFoundException e) {
+			LOGGER.info("long url not found for {} ", shortUrl);
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
 	}
 
 }

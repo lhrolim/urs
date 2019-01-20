@@ -22,6 +22,15 @@
 			</column>
 		</createTable>
 	</changeSet>
+	
+	<changeSet id="2019-01-20 13:00" author="lhrolim">
+		<createIndex tableName="urls" indexName="uq_shorturl" unique="true">
+			<column name="shorturl"></column>
+		</createIndex>
+		<createIndex tableName="urls" indexName="uq_longurl" unique="true">
+			<column name="longurl"></column>
+		</createIndex>
+	</changeSet>
 
 
 
