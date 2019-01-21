@@ -9,7 +9,7 @@ services:
     - redis
   redis:
      image: redis
-     container_name: cache
+     container_name: redis
      expose:
        - 6379
   postgres:
