@@ -13,8 +13,16 @@ Implementing an stub api in java 11 using spring-boot with the following require
 
 * The Short Urls were generated using a 36^length combination algorithm (uncapital letters and numbers), where length can be adjusted at the application.properties file (`urs.shorturlLength`)
 * The statistics are updated asynchronously to the database. The idea is to keep the performance high and allow eventual modularization. 
-  Any hits to a given short-url are first stored into Redis. These are only synced to the database on Quartz Job whose interval can be configured at (`urs.statisticsUpdateIntervalInMinutes`) 
+  Any hits to a given short-url are first stored into Redis. These are only synced to the database on Quartz Job whose interval can be configured at (`urs.statisticsUpdateIntervalInMinutes`)
+  
+## API ##
 
+* creation:  
+ [Post]http://localhost:8080/urs/api/v1/url
+* redirect:
+ [Get] http://localhost:8080/urs/{shorturl}
+* statistics:
+ [Get] http://localhost:8080/urs/api/v1/statistics/{shorturl}
 
 ## Running 
 
