@@ -1,4 +1,4 @@
-package br.com.plgbr.urlshortener.services;
+package br.com.plgbr.urlshortener.services.internal;
 
 import java.security.SecureRandom;
 

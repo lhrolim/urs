@@ -9,7 +9,7 @@ import br.com.plgbr.urlshortener.model.entities.UrlModel;
 
 public interface UrlRepository extends CrudRepository<UrlModel, Integer> {
 
-	Optional<UrlModel> findByShortUrl(@Param("shortUrl") String shortUrl);
+	Optional<UrlModel> findByShortUrl(@Param("url") String shortUrl);
 
 	Optional<UrlModel> findByLongUrl(@Param("longUrl") String longUrl);
 

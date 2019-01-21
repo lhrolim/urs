@@ -1,4 +1,4 @@
-package br.com.plgbr.urlshortener.services;
+package br.com.plgbr.urlshortener.services.internal;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -7,14 +7,15 @@ import java.util.Optional;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import br.com.plgbr.urlshortener.exception.LongUrlNotFoundException;
 import br.com.plgbr.urlshortener.model.entities.UrlModel;
 import br.com.plgbr.urlshortener.model.repositories.UrlRepository;
+import br.com.plgbr.urlshortener.services.api.UrlRepresentation;
 
-@Component
-public class UrlService {
+@Service
+public class UrlModelService {
 
 	@Autowired
 	private ShortUrlGenerator urlGenerator;
@@ -22,11 +23,14 @@ public class UrlService {
 	@Autowired
 	private UrlRepository urlRepository;
 
+	@Autowired
+	private UrlCacheService urlCacheService;
+
 	public URI lookupLongURL(String shortUrl) throws LongUrlNotFoundException {
 		if (shortUrl == null) {
 			throw new IllegalArgumentException("short url parameter is required");
 		}
-		URI result = lookupCache(shortUrl);
+		URI result = urlCacheService.lookupCache(shortUrl);
 		if (result != null) {
 			return result;
 		}
@@ -49,17 +53,12 @@ public class UrlService {
 		}
 	}
 
-	private URI lookupCache(String shortUrl) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String buildShortUrl(String longUrl) {
+	public UrlRepresentation buildShortUrl(String longUrl) {
 		if (longUrl == null) {
 			throw new IllegalArgumentException("long url is required");
 		}
 
-		String result = null;
+		UrlRepresentation result = null;
 		int retries = 0;
 		while (result == null && retries < 5) {
 			// if a collision occurs the insert would fail at the database due to a unique
@@ -70,40 +69,27 @@ public class UrlService {
 		return result;
 	}
 
-	private String doBuildShortUrl(String longUrl) {
+	private UrlRepresentation doBuildShortUrl(String longUrl) {
 		String shortUrl = this.urlGenerator.buildShortUrl();
 		try {
 			urlRepository.save(UrlModel.getInstance(shortUrl, longUrl));
-			return shortUrl;
+			return new UrlRepresentation(shortUrl, true, false);
 		} catch (DataIntegrityViolationException constraintException) {
 			if (!(constraintException.getCause() instanceof ConstraintViolationException)) {
 				throw constraintException; // playing safe, shouldn't happen
 			}
 			ConstraintViolationException cause = (ConstraintViolationException) constraintException.getCause();
 			String constraintName = cause.getConstraintName();
-			if (constraintName == "uq_longurl") {
+			if ("uq_longurl".equals(constraintName)) {
+				// fetching just when it fails
 				Optional<UrlModel> urlModel = this.urlRepository.findByLongUrl(longUrl);
-				return urlModel.get().getShortUrl();
-			} else if (constraintName == "uq_shorturl") {
+				return new UrlRepresentation(urlModel.get().getShortUrl(), false, false);
+			} else if ("uq_shorturl".equals(constraintName)) {
 				// collisions should rarely happen, but just in case let's handle them
 				return null;
 			}
 			throw constraintException;
 		}
-	}
-
-	class ShortUrlRepresentation {
-		String shortUrl;
-		Boolean fromCache;
-
-		public Boolean getFromCache() {
-			return fromCache;
-		}
-
-		public void setFromCache(Boolean fromCache) {
-			this.fromCache = fromCache;
-		}
-
 	}
 
 }

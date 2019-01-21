@@ -1,7 +1,5 @@
 package br.com.plgbr.urlshortener.model.entities;
 
-import java.io.Serializable;
-import java.util.Calendar;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -12,38 +10,28 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "urls")
-public class UrlModel implements Serializable {
-
-	private static final long serialVersionUID = -7847438739250612432L;
+@Table(name = "url_statistics")
+public class UrlStatistics {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	private Long id;
 
 	@Column(nullable = false, name = "shorturl")
 	private String shortUrl;
 
-	@Column(nullable = false, name = "longurl")
-	private String longUrl;
+	@Column(nullable = false)
+	private Long hits = 0L;
 
-	@Column(nullable = false, name = "creationdate")
-	private Date creationDate;
+	@Column(nullable = false, name = "lastaccess")
+	private Date lastAccess;
 
-	public int getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public String getLongUrl() {
-		return longUrl;
-	}
-
-	public void setLongUrl(String longUrl) {
-		this.longUrl = longUrl;
 	}
 
 	public String getShortUrl() {
@@ -54,20 +42,25 @@ public class UrlModel implements Serializable {
 		this.shortUrl = shortUrl;
 	}
 
-	public Date getCreationDate() {
-		return creationDate;
+	public Long getHits() {
+		return hits;
 	}
 
-	public void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
+	public void setHits(Long hits) {
+		this.hits = hits;
 	}
 
-	public static UrlModel getInstance(String shortUrl, String longUrl) {
-		UrlModel urlModel = new UrlModel();
-		urlModel.setCreationDate(Calendar.getInstance().getTime());
-		urlModel.setLongUrl(longUrl);
-		urlModel.setShortUrl(shortUrl);
-		return urlModel;
+	public Date getLastAccess() {
+		return lastAccess;
+	}
+
+	public void setLastAccess(Date lastAccess) {
+		this.lastAccess = lastAccess;
+	}
+
+	public void incrementHits(int incrementCount, Date lastAccessed) {
+		this.hits += incrementCount;
+		this.lastAccess = lastAccessed;
 	}
 
 	@Override
@@ -86,7 +79,7 @@ public class UrlModel implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		UrlModel other = (UrlModel) obj;
+		UrlStatistics other = (UrlStatistics) obj;
 		if (shortUrl == null) {
 			if (other.shortUrl != null)
 				return false;
@@ -97,7 +90,7 @@ public class UrlModel implements Serializable {
 
 	@Override
 	public String toString() {
-		return "UrlModel [url=" + shortUrl + ", longUrl=" + longUrl + ", creationDate=" + creationDate + "]";
+		return "UrlStatistics [shortUrl=" + shortUrl + ", hits=" + hits + ", lastAccess=" + lastAccess + "]";
 	}
 
 }

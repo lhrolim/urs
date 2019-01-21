@@ -1,4 +1,4 @@
-package br.com.plgbr.urlshortener.controller.dto;
+package br.com.plgbr.urlshortener.controller.dto.request;
 
 import java.io.Serializable;
 
@@ -6,7 +6,7 @@ import javax.validation.constraints.NotEmpty;
 
 import br.com.plgbr.urlshortener.util.validation.URIValidatorConstraint;
 
-public class ShortUrlCreationDto implements Serializable {
+public class ShortUrlCreationInputDto implements Serializable {
 
 	private static final long serialVersionUID = -3014804194322889016L;
 

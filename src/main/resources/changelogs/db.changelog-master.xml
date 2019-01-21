@@ -33,6 +33,29 @@
 	</changeSet>
 
 
+	<changeSet id="2019-01-20 14:00" author="lhrolim">
+
+		<createTable tableName="url_statistics">
+			<column name="id" type="bigint" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="shorturl" type="varchar(20)">
+				<constraints nullable="false" />
+			</column>
+			<column name="lastaccess" type="datetime">
+				<constraints nullable="false" />
+			</column>
+			<column name="hits" type="bigint">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+		
+		<createIndex tableName="url_statistics" indexName="uq_st_shorturl" unique="true">
+			<column name="shorturl"></column>
+		</createIndex>
+		
+	</changeSet>
+
 
 
 
